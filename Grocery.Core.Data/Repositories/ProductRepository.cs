@@ -132,5 +132,19 @@ namespace Grocery.Core.Data.Repositories
             // product.Id = item.Id;
             // return product;
         }
+        
+        public bool ProductExists(string name)
+        {
+            // Als er een product is met dezelfde naam, dan return true
+            string selectQuery = "SELECT COUNT(1) FROM Product WHERE Name = @Name";
+            OpenConnection();
+            using (SqliteCommand command = new(selectQuery, Connection))
+            {
+                command.Parameters.AddWithValue("Name", name);
+                int count = Convert.ToInt32(command.ExecuteScalar());
+                CloseConnection();
+                return count > 0;
+            }
+        }
     }
 }
