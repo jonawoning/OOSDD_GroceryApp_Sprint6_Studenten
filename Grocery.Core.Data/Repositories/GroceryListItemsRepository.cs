@@ -11,6 +11,7 @@ namespace Grocery.Core.Data.Repositories
 
         public GroceryListItemsRepository()
         {
+            // Deze query maakt een tabel aan als hij nog niet bestaat in de database met de standaard kolommen en waardes
             CreateTable(@"CREATE TABLE IF NOT EXISTS GroceryListItem (
                             [Id] INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
                             [GroceryListId] INTEGER NOT NULL,
@@ -74,6 +75,7 @@ namespace Grocery.Core.Data.Repositories
 
         public GroceryListItem Add(GroceryListItem item)
         {
+            // SQL Query om een grocerylist item toe te voegen
             string insertQuery = $"INSERT INTO GroceryListItem(GroceryListId, ProductId, Amount) VALUES(@GroceryListId, @ProductId, @Amount) Returning RowId;";
             OpenConnection();
             using (SqliteCommand command = new(insertQuery, Connection))
@@ -93,6 +95,7 @@ namespace Grocery.Core.Data.Repositories
 
         public GroceryListItem? Delete(GroceryListItem item)
         {
+            // SQL Query om een grocerylist item te verwijderen
             string deleteQuery = $"DELETE FROM GroceryListItem WHERE Id = {item.Id};";
             OpenConnection();
             Connection.ExecuteNonQuery(deleteQuery);
