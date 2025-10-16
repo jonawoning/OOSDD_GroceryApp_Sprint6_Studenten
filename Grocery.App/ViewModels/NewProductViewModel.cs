@@ -60,6 +60,8 @@ public partial class NewProductViewModel : BaseViewModel
         Message = "Product succesvol toegevoegd!";
         // Activeer het event
         OnProductAdd?.Invoke();
+        // Navigeer terug naar producten scherm of vorige scherm
+        Shell.Current.GoToAsync("..");
     }
     
     private bool productExists(string name)

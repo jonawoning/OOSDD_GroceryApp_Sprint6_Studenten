@@ -34,7 +34,7 @@ namespace Grocery.App.ViewModels
         {
             if (Client.Role == Role.Admin)
             {
-                // Geef refreshproducts mee zodat na toevoegen de lijst ververst wordt
+                // Geef refreshproducts mee zodat na toevoegen de lijst ververst wordt zonder dat er een nieuw viewmodel gemaakt moet worden
                 NewProductViewModel newProductViewModel = new NewProductViewModel(_productService);
                 newProductViewModel.OnProductAdd += RefreshProducts;
                 await Shell.Current.Navigation.PushAsync(new NewProductView(newProductViewModel));
