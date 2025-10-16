@@ -19,13 +19,25 @@ namespace Grocery.App.ViewModels
             Client = globalViewModel.Client;
             foreach (Product p in _productService.GetAll()) Products.Add(p);
         }
+        
+        public void RefreshProducts()
+        {
+            Products.Clear();
+            foreach (Product p in _productService.GetAll())
+            {
+                Products.Add(p);
+            }
+        }
 
         [RelayCommand]
         public async Task ShowNewProduct()
         {
             if (Client.Role == Role.Admin)
             {
-                await Shell.Current.GoToAsync(nameof(NewProductView), true);
+                // Geef refreshproducts mee zodat na toevoegen de lijst ververst wordt
+                NewProductViewModel newProductViewModel = new NewProductViewModel(_productService);
+                newProductViewModel.OnProductAdd += RefreshProducts;
+                await Shell.Current.Navigation.PushAsync(new NewProductView(newProductViewModel));
             }
         }
     }
