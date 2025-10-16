@@ -3,12 +3,13 @@ using Grocery.Core.Models;
 
 namespace Grocery.Core.Data.Repositories
 {
-    public class ProductRepository : IProductRepository
+    public class ProductRepository : DatabaseConnection, IProductRepository
     {
-        private readonly List<Product> products;
+        private readonly List<Product> _products = [];
+        
         public ProductRepository()
         {
-            products = [
+            _products = [
                 new Product(1, "Melk", 300, new DateOnly(2025, 9, 25), 0.95m),
                 new Product(2, "Kaas", 100, new DateOnly(2025, 9, 30), 7.98m),
                 new Product(3, "Brood", 400, new DateOnly(2025, 9, 12), 2.19m),
@@ -16,12 +17,12 @@ namespace Grocery.Core.Data.Repositories
         }
         public List<Product> GetAll()
         {
-            return products;
+            return _products;
         }
 
         public Product? Get(int id)
         {
-            return products.FirstOrDefault(p => p.Id == id);
+            return _products.FirstOrDefault(p => p.Id == id);
         }
 
         public Product Add(Product item)
@@ -36,7 +37,7 @@ namespace Grocery.Core.Data.Repositories
 
         public Product? Update(Product item)
         {
-            Product? product = products.FirstOrDefault(p => p.Id == item.Id);
+            Product? product = _products.FirstOrDefault(p => p.Id == item.Id);
             if (product == null) return null;
             product.Id = item.Id;
             return product;
