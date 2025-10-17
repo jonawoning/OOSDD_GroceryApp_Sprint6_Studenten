@@ -1,44 +1,49 @@
-﻿using Grocery.Core.Interfaces.Services;
-using Grocery.Core.Models;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Input;
+using Grocery.Core.Interfaces.Services;
+using Grocery.Core.Models;
 using Grocery.App.Views;
 
-namespace Grocery.App.ViewModels
+namespace Grocery.App.ViewModels;
+
+public partial class ProductViewModel : BaseViewModel
 {
-    public partial class ProductViewModel : BaseViewModel
+    private readonly IProductService _productService;
+
+    public ObservableCollection<Product> Products { get; } = new();
+
+    public Client Client { get; }
+
+    public ProductViewModel(IProductService productService, GlobalViewModel globalViewModel)
     {
-        private readonly IProductService _productService;
-        public ObservableCollection<Product> Products { get; set; }
-        public Client Client { get; set; }
+        _productService = productService;
+        Client = globalViewModel.Client;
+        LoadProducts();
+    }
 
-        public ProductViewModel(IProductService productService, GlobalViewModel globalViewModel)
+    private void LoadProducts()
+    {
+        Products.Clear();
+        foreach (var product in _productService.GetAll())
         {
-            _productService = productService;
-            Products = [];
-            Client = globalViewModel.Client;
-            foreach (Product p in _productService.GetAll()) Products.Add(p);
+            Products.Add(product);
         }
-        
-        public void RefreshProducts()
+    }
+
+    public void RefreshProducts() => LoadProducts();
+
+    [RelayCommand]
+    public async Task ShowNewProduct()
+    {
+        if (Client.Role != Role.Admin)
         {
-            Products.Clear();
-            foreach (Product p in _productService.GetAll())
-            {
-                Products.Add(p);
-            }
+            await Shell.Current.DisplayAlert("Toegang geweigerd", "Alleen admins kunnen nieuwe producten toevoegen.", "OK");
+            return;
         }
 
-        [RelayCommand]
-        public async Task ShowNewProduct()
-        {
-            if (Client.Role == Role.Admin)
-            {
-                // Geef refreshproducts mee zodat na toevoegen de lijst ververst wordt zonder dat er een nieuw viewmodel gemaakt moet worden
-                NewProductViewModel newProductViewModel = new NewProductViewModel(_productService);
-                newProductViewModel.OnProductAdd += RefreshProducts;
-                await Shell.Current.Navigation.PushAsync(new NewProductView(newProductViewModel));
-            }
-        }
+        var newProductViewModel = new NewProductViewModel(_productService);
+        newProductViewModel.OnProductAdd += RefreshProducts;
+
+        await Shell.Current.Navigation.PushAsync(new NewProductView(newProductViewModel));
     }
 }
