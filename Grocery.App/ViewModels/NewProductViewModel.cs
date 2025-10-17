@@ -7,40 +7,46 @@ namespace Grocery.App.ViewModels;
 
 public partial class NewProductViewModel : BaseViewModel
 {
-    // Hier moet code komen waar je een nieuw product kan aanmaken en alleen de role Admin dit kan doen
     private readonly IProductService _productService;
-    public String Name { get; set; }
+
+    public string Name { get; set; } = string.Empty;
     public int Stock { get; set; }
-    public DateOnly ShelfLife { get; set; }
+    public DateOnly ShelfLife { get; set; } = DateOnly.FromDateTime(DateTime.Today);
     public decimal Price { get; set; }
 
     [ObservableProperty]
-    private string errorMessage;
+    private string _errorMessage = string.Empty;
 
     [ObservableProperty]
-    private string message;
-    
+    private string _message = string.Empty;
+
     public event Action? OnProductAdd;
-    
+
     public NewProductViewModel(IProductService productService)
     {
         _productService = productService;
-        ShelfLife = DateOnly.FromDateTime(DateTime.Today);
     }
 
     [RelayCommand]
     public void AddProduct()
     {
-        ErrorMessage = "";
-        Message = "";
-        if (productExists(Name))
+        ClearMessages();
+
+        if (Name.Length == 0 || !(Name.Length >= 3 && Name.Length <= 50))
         {
-            ErrorMessage = "Product naam bestaat al, kies een andere naam.";
+            ErrorMessage = "Productnaam moet tussen de 3 en 50 tekens lang zijn.";
             return;
         }
+
+        if (_productService.ProductExists(Name))
+        {
+            ErrorMessage = "Productnaam bestaat al, kies een andere naam.";
+            return;
+        }
+
         if (Stock < 0)
         {
-            ErrorMessage = "Stock kan niet negatief zijn.";
+            ErrorMessage = "Voorraad kan niet negatief zijn.";
             return;
         }
 
@@ -49,24 +55,31 @@ public partial class NewProductViewModel : BaseViewModel
             ErrorMessage = "Prijs kan niet negatief zijn.";
             return;
         }
+
         if (ShelfLife < DateOnly.FromDateTime(DateTime.Today))
         {
             ErrorMessage = "Houdbaarheidsdatum kan niet in het verleden liggen.";
             return;
         }
 
-        Product product = new Product(0, Name, Stock, ShelfLife, Price);
-        _productService.Add(product);
-        Message = "Product succesvol toegevoegd!";
-        // Activeer het event
-        OnProductAdd?.Invoke();
-        // Navigeer terug naar producten scherm of vorige scherm
-        Shell.Current.GoToAsync("..");
+        try
+        {
+            var product = new Product(0, Name, Stock, ShelfLife, Price);
+            _productService.Add(product);
+
+            Message = "Product succesvol toegevoegd!";
+            OnProductAdd?.Invoke();
+            Shell.Current.GoToAsync("..");
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Er is een fout opgetreden bij het toevoegen van het product: {ex.Message}";
+        }
     }
-    
-    private bool productExists(string name)
+
+    private void ClearMessages()
     {
-        return _productService.ProductExists(name);
+        ErrorMessage = string.Empty;
+        Message = string.Empty;
     }
-    
 }
